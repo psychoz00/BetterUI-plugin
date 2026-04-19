@@ -1,0 +1,16 @@
+{
+  "Author": "",
+  "Name": "BetterCDs",
+  "Punchline": "Better cooldown tracking.",
+  "Description": "Tracks and displays ability cooldowns with configurable overlays.",
+  "InternalName": "BetterCDs",
+  "RepoUrl": "",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "cooldowns",
+    "ui",
+    "overlay"
+  ],
+  "IconUrl": "",
+  "AcceptsFeedback": true
+}

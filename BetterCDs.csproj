@@ -1,0 +1,19 @@
+<Project Sdk="Dalamud.NET.Sdk/13.0.0">
+
+  <PropertyGroup>
+    <Version>0.1.0.0</Version>
+    <Description>Better cooldown tracking for FFXIV</Description>
+    <PackageProjectUrl></PackageProjectUrl>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="BetterCDs.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
