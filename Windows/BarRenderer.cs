@@ -158,6 +158,8 @@ public sealed class BarRenderer : IDisposable
 
         var drawList = ImGui.GetWindowDrawList();
 
+        DrawEclipseVignette(drawList, cursor, size);
+
         if (!info.IsReady && info.TotalRecast > 0)
         {
             var fill = info.FillFraction;
@@ -176,12 +178,7 @@ public sealed class BarRenderer : IDisposable
             {
                 var remaining = info.Remaining;
                 var text = remaining >= 10f ? $"{(int)MathF.Ceiling(remaining)}" : $"{remaining:0.0}";
-                var textSize = ImGui.CalcTextSize(text);
-                var textPos = new Vector2(
-                    cursor.X + (size.X - textSize.X) * 0.5f,
-                    cursor.Y + (size.Y - textSize.Y) * 0.5f);
-                drawList.AddText(textPos + new Vector2(1, 1), 0xFF000000, text);
-                drawList.AddText(textPos, 0xFFFFFFFF, text);
+                DrawCooldownText(drawList, cursor, size, text);
             }
         }
 
@@ -190,14 +187,8 @@ public sealed class BarRenderer : IDisposable
                         || (tracked.FollowComboChain && info.ComboAdvanced);
         if (buffGlow || chainGlow)
         {
-            var pulse = (MathF.Sin((float)ImGui.GetTime() * 4f) + 1f) * 0.5f;
-            var alpha = 0.6f + pulse * 0.4f;
-            var tint = buffGlow
-                ? new Vector4(1f, 0.85f, 0.2f, alpha)
-                : new Vector4(0.4f, 0.9f, 1f, alpha);
-            var color = ImGui.GetColorU32(tint);
-            var pad = new Vector2(2, 2);
-            drawList.AddRect(cursor - pad, cursor + size + pad, color, 2f, ImDrawFlags.None, 3f);
+            var baseTint = new Vector4(1f, 0.72f, 0.18f, 1f);
+            DrawProcGlow(drawList, cursor, size, baseTint);
         }
 
         if (info.MaxCharges > 1)
@@ -214,6 +205,120 @@ public sealed class BarRenderer : IDisposable
 
         if (ImGui.IsItemHovered() && !string.IsNullOrEmpty(info.ActionName))
             ImGui.SetTooltip(info.ActionName);
+    }
+
+    private static void DrawEclipseVignette(ImDrawListPtr drawList, Vector2 cursor, Vector2 size)
+    {
+        const uint dark = 0x70000000;
+        const uint medium = 0x30000000;
+        const uint light = 0x00000000;
+
+        var center = cursor + size * 0.5f;
+        var topMid = new Vector2(center.X, cursor.Y);
+        var rightMid = new Vector2(cursor.X + size.X, center.Y);
+        var bottomMid = new Vector2(center.X, cursor.Y + size.Y);
+        var leftMid = new Vector2(cursor.X, center.Y);
+        var tl = cursor;
+        var tr = new Vector2(cursor.X + size.X, cursor.Y);
+        var br = cursor + size;
+        var bl = new Vector2(cursor.X, cursor.Y + size.Y);
+
+        drawList.AddRectFilledMultiColor(tl, center, dark, medium, light, medium);
+        drawList.AddRectFilledMultiColor(topMid, rightMid, medium, dark, medium, light);
+        drawList.AddRectFilledMultiColor(center, br, light, medium, dark, medium);
+        drawList.AddRectFilledMultiColor(leftMid, bottomMid, medium, light, medium, dark);
+    }
+
+    private static void DrawCooldownText(ImDrawListPtr drawList, Vector2 cursor, Vector2 size, string text)
+    {
+        var font = ImGui.GetFont();
+        var fontSize = MathF.Max(12f, size.Y * 0.4f);
+        var scale = fontSize / ImGui.GetFontSize();
+        var textSize = ImGui.CalcTextSize(text) * scale;
+        var textPos = new Vector2(
+            cursor.X + (size.X - textSize.X) * 0.5f,
+            cursor.Y + (size.Y - textSize.Y) * 0.5f);
+
+        const uint shadowColor = 0xFF000000;
+        const float strokeOffset = 1.5f;
+        for (var dx = -1; dx <= 1; dx++)
+        for (var dy = -1; dy <= 1; dy++)
+        {
+            if (dx == 0 && dy == 0) continue;
+            drawList.AddText(font, fontSize, textPos + new Vector2(dx * strokeOffset, dy * strokeOffset), shadowColor, text);
+        }
+        drawList.AddText(font, fontSize, textPos, 0xFFFFFFFF, text);
+    }
+
+    private static void DrawProcGlow(ImDrawListPtr drawList, Vector2 cursor, Vector2 size, Vector4 baseTint)
+    {
+        const float inset = 2f;
+        const float desiredPeriod = 14f;
+        const float dashRatio = 0.55f;
+        const float revolutionSeconds = 5f;
+        const float coreThickness = 2.5f;
+        const float haloThickness = 5f;
+
+        var tl = cursor + new Vector2(inset, inset);
+        var w = MathF.Max(1f, size.X - inset * 2f);
+        var h = MathF.Max(1f, size.Y - inset * 2f);
+        var perimeter = 2f * (w + h);
+
+        var numDashes = System.Math.Max(4, (int)MathF.Round(perimeter / desiredPeriod));
+        var period = perimeter / numDashes;
+        var dashLen = period * dashRatio;
+
+        var time = (float)ImGui.GetTime();
+        var phase = (time * perimeter / revolutionSeconds) % period;
+
+        var pulse = (MathF.Sin(time * 4f) + 1f) * 0.5f;
+        var alpha = 0.7f + pulse * 0.3f;
+
+        var coreColor = ImGui.GetColorU32(new Vector4(baseTint.X, baseTint.Y, baseTint.Z, alpha));
+        var haloColor = ImGui.GetColorU32(new Vector4(baseTint.X, baseTint.Y, baseTint.Z, alpha * 0.35f));
+
+        for (var i = 0; i < numDashes; i++)
+        {
+            var start = (i * period + phase) % perimeter;
+            DrawPerimeterDash(drawList, tl, w, h, perimeter, start, dashLen, haloColor, haloThickness);
+            DrawPerimeterDash(drawList, tl, w, h, perimeter, start, dashLen, coreColor, coreThickness);
+        }
+    }
+
+    private static void DrawPerimeterDash(ImDrawListPtr drawList, Vector2 tl, float w, float h, float perimeter,
+        float startP, float dashLen, uint color, float thickness)
+    {
+        var cur = ((startP % perimeter) + perimeter) % perimeter;
+        var remaining = dashLen;
+
+        while (remaining > 0.01f)
+        {
+            float distToCorner;
+            if (cur < w) distToCorner = w - cur;
+            else if (cur < w + h) distToCorner = w + h - cur;
+            else if (cur < 2f * w + h) distToCorner = 2f * w + h - cur;
+            else distToCorner = perimeter - cur;
+
+            var segLen = MathF.Min(remaining, distToCorner);
+            var a = PerimeterPoint(cur, tl, w, h);
+            var b = PerimeterPoint(cur + segLen, tl, w, h);
+            drawList.AddLine(a, b, color, thickness);
+
+            remaining -= segLen;
+            cur += segLen;
+            if (cur >= perimeter) cur -= perimeter;
+        }
+    }
+
+    private static Vector2 PerimeterPoint(float p, Vector2 tl, float w, float h)
+    {
+        if (p < w) return new Vector2(tl.X + p, tl.Y);
+        p -= w;
+        if (p < h) return new Vector2(tl.X + w, tl.Y + p);
+        p -= h;
+        if (p < w) return new Vector2(tl.X + w - p, tl.Y + h);
+        p -= w;
+        return new Vector2(tl.X, tl.Y + h - p);
     }
 
     private bool HasActiveBuff(uint statusId)
