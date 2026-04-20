@@ -10,7 +10,7 @@ public class Profile
     public string Name { get; set; } = "";
     public uint JobId { get; set; }
     public int FormatVersion { get; set; } = 1;
-    public List<string> Groups { get; set; } = new() { "Essential", "Utility", "Defensive" };
+    public List<string> Groups { get; set; } = new();
     public List<TrackedAction> Tracked { get; set; } = new();
 
     public Profile Clone()

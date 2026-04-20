@@ -39,7 +39,20 @@ public sealed class ConfigWindow : Window, IDisposable
 
     public override void Draw()
     {
-        if (ImGui.BeginTabBar("##bcd-tabs"))
+        if (ImGui.BeginTabBar("##bui-root-tabs"))
+        {
+            if (ImGui.BeginTabItem("Cooldown Manager"))
+            {
+                DrawCooldownManagerTab();
+                ImGui.EndTabItem();
+            }
+            ImGui.EndTabBar();
+        }
+    }
+
+    private void DrawCooldownManagerTab()
+    {
+        if (ImGui.BeginTabBar("##bui-cdmgr-tabs"))
         {
             if (ImGui.BeginTabItem("General"))
             {
@@ -452,6 +465,12 @@ public sealed class ConfigWindow : Window, IDisposable
 
         ImGui.Spacing();
         ImGui.TextUnformatted("Add action:");
+
+        if (active.Groups.Count == 0)
+        {
+            ImGui.TextDisabled("Create a group above before adding actions.");
+            return;
+        }
 
         var existing = new HashSet<uint>(active.Tracked.Select(t => t.ActionId));
         if (picker.Draw(selectedJobId, existing) is { } pickedId)

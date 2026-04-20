@@ -158,8 +158,7 @@ public sealed class BarRenderer : IDisposable
 
         var drawList = ImGui.GetWindowDrawList();
 
-        var suppressRecast = tracked.DimWhenNotUsable || tracked.FollowComboChain;
-        if (!info.IsReady && info.TotalRecast > 0 && !suppressRecast)
+        if (!info.IsReady && info.TotalRecast > 0)
         {
             var fill = info.FillFraction;
             var center = new Vector2(cursor.X + size.X * 0.5f, cursor.Y + size.Y * 0.5f);
