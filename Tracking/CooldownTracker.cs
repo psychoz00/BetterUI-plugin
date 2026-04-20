@@ -56,6 +56,10 @@ public sealed class CooldownTracker
         }
 
         var adjusted = manager->GetAdjustedActionId(displayId);
+
+        if (followCombo && !comboAdvanced && adjusted != actionId)
+            comboAdvanced = true;
+
         var maxCharges = ActionManager.GetMaxCharges(adjusted, 0);
 
         if (sheet is not null && adjusted != actionId && sheet.TryGetRow(adjusted, out var adjRow))
