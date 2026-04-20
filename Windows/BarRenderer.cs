@@ -18,6 +18,8 @@ public sealed class BarRenderer : IDisposable
     private readonly IClientState clientState;
 
     private readonly Dictionary<string, Vector2> resolvedPositions = new();
+    private readonly Dictionary<string, Vector2> appliedPositions = new();
+    private readonly Dictionary<string, Vector2> groupSizes = new();
 
     public BarRenderer(Plugin plugin, CooldownTracker tracker, ITextureProvider textureProvider, IClientState clientState)
     {
@@ -68,19 +70,39 @@ public sealed class BarRenderer : IDisposable
 
     private Vector2 ResolvePosition(string groupName, BarSettings settings, HashSet<string> visited)
     {
+        var screenCenter = ImGui.GetIO().DisplaySize * 0.5f;
+
         if (string.IsNullOrEmpty(settings.AnchorToGroup))
-            return settings.Position;
+            return screenCenter + settings.Position;
 
         if (!visited.Add(groupName))
-            return settings.Position;
+            return screenCenter + settings.Position;
 
-        if (resolvedPositions.TryGetValue(settings.AnchorToGroup, out var anchorPos))
-            return anchorPos + settings.AnchorOffset;
+        Vector2 anchorPos;
+        if (resolvedPositions.TryGetValue(settings.AnchorToGroup, out var cached))
+            anchorPos = cached;
+        else if (plugin.Configuration.Bars.TryGetValue(settings.AnchorToGroup, out var anchorSettings))
+            anchorPos = ResolvePosition(settings.AnchorToGroup, anchorSettings, visited);
+        else
+            return screenCenter + settings.Position;
 
-        if (plugin.Configuration.Bars.TryGetValue(settings.AnchorToGroup, out var anchorSettings))
-            return ResolvePosition(settings.AnchorToGroup, anchorSettings, visited) + settings.AnchorOffset;
+        var anchorSize = groupSizes.GetValueOrDefault(settings.AnchorToGroup, Vector2.Zero);
+        var selfSize = groupSizes.GetValueOrDefault(groupName, Vector2.Zero);
+        var directional = ComputeDirectionalOffset(settings.AnchorDirection, anchorSize, selfSize);
+        return anchorPos + directional + settings.AnchorOffset;
+    }
 
-        return settings.Position;
+    private static Vector2 ComputeDirectionalOffset(AnchorSide side, Vector2 anchorSize, Vector2 selfSize)
+    {
+        const float gap = 4f;
+        return side switch
+        {
+            AnchorSide.Up    => new Vector2(0, -(anchorSize.Y + selfSize.Y) * 0.5f - gap),
+            AnchorSide.Down  => new Vector2(0,  (anchorSize.Y + selfSize.Y) * 0.5f + gap),
+            AnchorSide.Left  => new Vector2(-(anchorSize.X + selfSize.X) * 0.5f - gap, 0),
+            AnchorSide.Right => new Vector2( (anchorSize.X + selfSize.X) * 0.5f + gap, 0),
+            _ => Vector2.Zero,
+        };
     }
 
     private void DrawBar(string groupName, List<TrackedAction> actions, BarSettings settings, Vector2 position)
@@ -102,6 +124,11 @@ public sealed class BarRenderer : IDisposable
             flags |= ImGuiWindowFlags.NoMove;
 
         var cond = (locked || anchored) ? ImGuiCond.Always : ImGuiCond.FirstUseEver;
+        if (!anchored && !locked &&
+            (!appliedPositions.TryGetValue(groupName, out var applied) || applied != settings.Position))
+        {
+            cond = ImGuiCond.Always;
+        }
         var pivot = new Vector2(0.5f, 0.5f);
         ImGui.SetNextWindowPos(position, cond, pivot);
 
@@ -119,17 +146,21 @@ public sealed class BarRenderer : IDisposable
                 DrawAction(actions[i]);
             }
 
+            groupSizes[groupName] = ImGui.GetWindowSize();
+
             if (!locked && !anchored)
             {
                 var topLeft = ImGui.GetWindowPos();
                 var windowSize = ImGui.GetWindowSize();
-                var center = topLeft + windowSize * 0.5f;
-                if (System.Math.Abs(center.X - settings.Position.X) > 0.5f ||
-                    System.Math.Abs(center.Y - settings.Position.Y) > 0.5f)
+                var screenCenter = ImGui.GetIO().DisplaySize * 0.5f;
+                var relative = topLeft + windowSize * 0.5f - screenCenter;
+                if (System.Math.Abs(relative.X - settings.Position.X) > 0.5f ||
+                    System.Math.Abs(relative.Y - settings.Position.Y) > 0.5f)
                 {
-                    settings.Position = center;
+                    settings.Position = relative;
                     plugin.Configuration.Save();
                 }
+                appliedPositions[groupName] = settings.Position;
             }
         }
         ImGui.End();

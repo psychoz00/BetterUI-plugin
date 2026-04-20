@@ -13,7 +13,7 @@ public class Configuration : IPluginConfiguration
 
     public bool ShowOverlay { get; set; } = true;
     public bool OverlayLocked { get; set; } = false;
-    public Vector2 OverlayPosition { get; set; } = new(200, 200);
+    public Vector2 OverlayPosition { get; set; } = new(0, 0);
     public float OverlayIconSize { get; set; } = 48f;
     public float OverlayIconSpacing { get; set; } = 4f;
 

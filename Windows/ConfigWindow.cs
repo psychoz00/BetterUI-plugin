@@ -168,18 +168,39 @@ public sealed class ConfigWindow : Window, IDisposable
     private void DrawBarRow(Profile active, string group)
     {
         var settings = GetOrCreateBarSettings(group);
+        var anchored = !string.IsNullOrEmpty(settings.AnchorToGroup);
 
         ImGui.Text(group);
 
-        var pos = settings.Position;
-        ImGui.SetNextItemWidth(200);
-        if (ImGui.DragFloat2("Position (center)", ref pos, 1f))
+        if (anchored && settings.Position != Vector2.Zero)
         {
-            settings.Position = pos;
+            settings.Position = Vector2.Zero;
             plugin.Configuration.Save();
         }
 
-        ImGui.SameLine();
+        var posX = settings.Position.X;
+        var posY = settings.Position.Y;
+        using (new DisabledScope(anchored))
+        {
+            ImGui.SetNextItemWidth(90);
+            if (ImGui.DragFloat("X##pos", ref posX, 1f, 0f, 0f, "%.0f"))
+            {
+                settings.Position = new Vector2(posX, settings.Position.Y);
+                plugin.Configuration.Save();
+            }
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(90);
+            if (ImGui.DragFloat("Y##pos", ref posY, 1f, 0f, 0f, "%.0f"))
+            {
+                settings.Position = new Vector2(settings.Position.X, posY);
+                plugin.Configuration.Save();
+            }
+            ImGui.SameLine();
+            ImGui.TextDisabled(anchored
+                ? "(locked while anchored)"
+                : "(offset from screen center; 0 = centered)");
+        }
+
         var vertical = settings.Vertical;
         if (ImGui.Checkbox("Vertical", ref vertical))
         {
@@ -187,7 +208,6 @@ public sealed class ConfigWindow : Window, IDisposable
             plugin.Configuration.Save();
         }
 
-        var anchored = !string.IsNullOrEmpty(settings.AnchorToGroup);
         var anchorLabel = anchored ? settings.AnchorToGroup! : "(none)";
         ImGui.SetNextItemWidth(160);
         if (ImGui.BeginCombo("Anchor to", anchorLabel))
@@ -203,7 +223,12 @@ public sealed class ConfigWindow : Window, IDisposable
                 if (CreatesCycle(group, other)) continue;
                 if (ImGui.Selectable(other, settings.AnchorToGroup == other))
                 {
+                    var wasUnanchored = string.IsNullOrEmpty(settings.AnchorToGroup);
                     settings.AnchorToGroup = other;
+                    if (settings.AnchorDirection == AnchorSide.None)
+                        settings.AnchorDirection = AnchorSide.Up;
+                    if (wasUnanchored)
+                        settings.Position = Vector2.Zero;
                     plugin.Configuration.Save();
                 }
             }
@@ -212,13 +237,37 @@ public sealed class ConfigWindow : Window, IDisposable
 
         if (anchored)
         {
-            var offset = settings.AnchorOffset;
-            ImGui.SetNextItemWidth(200);
-            if (ImGui.DragFloat2("Offset", ref offset, 1f))
+            ImGui.SetNextItemWidth(120);
+            if (ImGui.BeginCombo("Direction", settings.AnchorDirection.ToString()))
             {
-                settings.AnchorOffset = offset;
+                foreach (var side in Enum.GetValues<AnchorSide>())
+                {
+                    if (ImGui.Selectable(side.ToString(), settings.AnchorDirection == side))
+                    {
+                        settings.AnchorDirection = side;
+                        plugin.Configuration.Save();
+                    }
+                }
+                ImGui.EndCombo();
+            }
+
+            var offX = settings.AnchorOffset.X;
+            var offY = settings.AnchorOffset.Y;
+            ImGui.SetNextItemWidth(90);
+            if (ImGui.DragFloat("Offset X##anchor", ref offX, 1f, 0f, 0f, "%.0f"))
+            {
+                settings.AnchorOffset = new Vector2(offX, settings.AnchorOffset.Y);
                 plugin.Configuration.Save();
             }
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(90);
+            if (ImGui.DragFloat("Offset Y##anchor", ref offY, 1f, 0f, 0f, "%.0f"))
+            {
+                settings.AnchorOffset = new Vector2(settings.AnchorOffset.X, offY);
+                plugin.Configuration.Save();
+            }
+            ImGui.SameLine();
+            ImGui.TextDisabled("(fine-tune on top of direction)");
         }
     }
 
