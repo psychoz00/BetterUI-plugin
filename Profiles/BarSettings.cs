@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 
-namespace BetterCDs.Profiles;
+namespace BetterUI.Profiles;
 
 [Serializable]
 public class BarSettings

@@ -4,7 +4,7 @@ using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 
-namespace BetterCDs.Profiles;
+namespace BetterUI.Profiles;
 
 public static class ProfileShareCodec
 {
@@ -36,7 +36,7 @@ public static class ProfileShareCodec
         var trimmed = input.Trim();
         if (!trimmed.StartsWith(Prefix, StringComparison.Ordinal))
         {
-            error = $"Missing '{Prefix}' prefix — is this a BetterCDs profile string?";
+            error = $"Missing '{Prefix}' prefix — is this a BetterUI profile string?";
             return false;
         }
 

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using BetterCDs.Profiles;
+using BetterUI.Profiles;
 using Dalamud.Configuration;
 
-namespace BetterCDs;
+namespace BetterUI;
 
 [Serializable]
 public class Configuration : IPluginConfiguration

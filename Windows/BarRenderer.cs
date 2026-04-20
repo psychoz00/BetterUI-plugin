@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using BetterCDs.Profiles;
-using BetterCDs.Tracking;
+using BetterUI.Profiles;
+using BetterUI.Tracking;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Textures;
 using Dalamud.Plugin.Services;
 
-namespace BetterCDs.Windows;
+namespace BetterUI.Windows;
 
 public sealed class BarRenderer : IDisposable
 {
@@ -105,7 +105,7 @@ public sealed class BarRenderer : IDisposable
         var pivot = new Vector2(0.5f, 0.5f);
         ImGui.SetNextWindowPos(position, cond, pivot);
 
-        if (ImGui.Begin($"BetterCDs##bar_{groupName}", flags))
+        if (ImGui.Begin($"BetterUI##bar_{groupName}", flags))
         {
             for (var i = 0; i < actions.Count; i++)
             {

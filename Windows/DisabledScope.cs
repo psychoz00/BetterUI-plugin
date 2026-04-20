@@ -1,7 +1,7 @@
 using System;
 using Dalamud.Bindings.ImGui;
 
-namespace BetterCDs.Windows;
+namespace BetterUI.Windows;
 
 public readonly struct DisabledScope : IDisposable
 {

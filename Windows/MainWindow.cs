@@ -3,14 +3,14 @@ using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 
-namespace BetterCDs.Windows;
+namespace BetterUI.Windows;
 
 public sealed class MainWindow : Window, IDisposable
 {
     private readonly Plugin plugin;
 
     public MainWindow(Plugin plugin)
-        : base("BetterCDs##Main", ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse)
+        : base("BetterUI##Main", ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse)
     {
         this.plugin = plugin;
         Size = new Vector2(360, 0);

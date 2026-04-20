@@ -1,6 +1,6 @@
-using BetterCDs.Profiles;
-using BetterCDs.Tracking;
-using BetterCDs.Windows;
+using BetterUI.Profiles;
+using BetterUI.Tracking;
+using BetterUI.Windows;
 using Dalamud.Game.Command;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
@@ -9,7 +9,7 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 
-namespace BetterCDs;
+namespace BetterUI;
 
 public sealed class Plugin : IDalamudPlugin
 {
@@ -27,7 +27,7 @@ public sealed class Plugin : IDalamudPlugin
     public ProfileStore ProfileStore { get; }
     public CooldownTracker Tracker { get; }
 
-    public readonly WindowSystem WindowSystem = new("BetterCDs");
+    public readonly WindowSystem WindowSystem = new("BetterUI");
 
     private readonly MainWindow mainWindow;
     private readonly ConfigWindow configWindow;
@@ -48,7 +48,7 @@ public sealed class Plugin : IDalamudPlugin
 
         CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
         {
-            HelpMessage = "Open BetterCDs. Use \"/bcd config\" for settings, \"/bcd lock\" to toggle the overlay lock."
+            HelpMessage = "Open BetterUI. Use \"/bcd config\" for settings, \"/bcd lock\" to toggle the overlay lock."
         });
 
         PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
@@ -56,7 +56,7 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
 
-        Log.Information("BetterCDs loaded.");
+        Log.Information("BetterUI loaded.");
     }
 
     public void Dispose()
@@ -86,7 +86,7 @@ public sealed class Plugin : IDalamudPlugin
             case "lock":
                 Configuration.OverlayLocked = !Configuration.OverlayLocked;
                 Configuration.Save();
-                ChatGui.Print($"[BetterCDs] Overlay {(Configuration.OverlayLocked ? "locked" : "unlocked")}.");
+                ChatGui.Print($"[BetterUI] Overlay {(Configuration.OverlayLocked ? "locked" : "unlocked")}.");
                 break;
             case "show":
                 Configuration.ShowOverlay = true;

@@ -4,7 +4,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina.Excel.Sheets;
 using LuminaAction = Lumina.Excel.Sheets.Action;
 
-namespace BetterCDs.Tracking;
+namespace BetterUI.Tracking;
 
 public sealed class CooldownTracker
 {

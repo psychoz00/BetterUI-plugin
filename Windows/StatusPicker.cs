@@ -3,7 +3,7 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Textures;
 using Lumina.Excel.Sheets;
 
-namespace BetterCDs.Windows;
+namespace BetterUI.Windows;
 
 public sealed class StatusPicker
 {

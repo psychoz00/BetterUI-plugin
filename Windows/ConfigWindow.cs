@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using BetterCDs.Profiles;
+using BetterUI.Profiles;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Windowing;
 using Lumina.Excel.Sheets;
 using LuminaAction = Lumina.Excel.Sheets.Action;
 
-namespace BetterCDs.Windows;
+namespace BetterUI.Windows;
 
 public sealed class ConfigWindow : Window, IDisposable
 {
@@ -22,7 +22,7 @@ public sealed class ConfigWindow : Window, IDisposable
     private string newGroupBuffer = string.Empty;
 
     public ConfigWindow(Plugin plugin)
-        : base("BetterCDs — Settings##Config", ImGuiWindowFlags.NoCollapse)
+        : base("BetterUI — Settings##Config", ImGuiWindowFlags.NoCollapse)
     {
         this.plugin = plugin;
         Size = new Vector2(680, 560);
@@ -306,7 +306,7 @@ public sealed class ConfigWindow : Window, IDisposable
         if (ImGui.Button("Export to clipboard") && active is not null)
         {
             ImGui.SetClipboardText(ProfileShareCodec.Export(active));
-            Plugin.ChatGui.Print("[BetterCDs] Profile copied to clipboard.");
+            Plugin.ChatGui.Print("[BetterUI] Profile copied to clipboard.");
         }
 
         ImGui.SameLine();
@@ -332,7 +332,7 @@ public sealed class ConfigWindow : Window, IDisposable
             if (stored.JobId != selectedJobId) selectedJobId = stored.JobId;
             importError = string.Empty;
             importBuffer = string.Empty;
-            Plugin.ChatGui.Print($"[BetterCDs] Imported \"{stored.Name}\".");
+            Plugin.ChatGui.Print($"[BetterUI] Imported \"{stored.Name}\".");
         }
         else
         {

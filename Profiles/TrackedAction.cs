@@ -1,6 +1,6 @@
 using System;
 
-namespace BetterCDs.Profiles;
+namespace BetterUI.Profiles;
 
 [Serializable]
 public class TrackedAction

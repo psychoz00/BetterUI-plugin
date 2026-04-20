@@ -1,4 +1,4 @@
-namespace BetterCDs.Tracking;
+namespace BetterUI.Tracking;
 
 public readonly record struct CooldownInfo(
     uint ActionId,

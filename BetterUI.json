@@ -1,9 +1,9 @@
 {
   "Author": "",
-  "Name": "BetterCDs",
+  "Name": "BetterUI",
   "Punchline": "Better cooldown tracking.",
   "Description": "Tracks and displays ability cooldowns with configurable overlays.",
-  "InternalName": "BetterCDs",
+  "InternalName": "BetterUI",
   "RepoUrl": "",
   "ApplicableVersion": "any",
   "Tags": [

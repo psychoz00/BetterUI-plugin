@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace BetterCDs.Profiles;
+namespace BetterUI.Profiles;
 
 [Serializable]
 public class JobProfileSet

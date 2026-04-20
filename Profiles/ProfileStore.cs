@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using Dalamud.Plugin.Services;
 using Lumina.Excel.Sheets;
 
-namespace BetterCDs.Profiles;
+namespace BetterUI.Profiles;
 
 public sealed class ProfileStore
 {
